@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/digitorus/pdfsign/verify"
+	"github.com/registrobr/pdfsign/verify"
 )
 
 func VerifyCommand() {

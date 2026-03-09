@@ -1,4 +1,4 @@
-module github.com/digitorus/pdfsign
+module github.com/registrobr/pdfsign
 
 go 1.24.0
 

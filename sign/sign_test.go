@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/digitorus/pdf"
-	"github.com/digitorus/pdfsign/revocation"
-	"github.com/digitorus/pdfsign/verify"
 	"github.com/mattetti/filebuffer"
+	"github.com/registrobr/pdfsign/revocation"
+	"github.com/registrobr/pdfsign/verify"
 )
 
 const signCertPem = `-----BEGIN CERTIFICATE-----
