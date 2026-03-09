@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/digitorus/pdfsign/revocation"
 	"github.com/digitorus/pkcs7"
 	"github.com/digitorus/timestamp"
+	"github.com/registrobr/pdfsign/revocation"
 	"golang.org/x/crypto/ocsp"
 )
 

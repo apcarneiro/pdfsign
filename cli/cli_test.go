@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/digitorus/pdfsign/sign"
+	"github.com/registrobr/pdfsign/sign"
 )
 
 func TestParseCertType(t *testing.T) {
