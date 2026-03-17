@@ -13,8 +13,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/digitorus/pkcs7"
 	"github.com/digitorus/timestamp"
+	"github.com/registrobr/pkcs7"
 	"golang.org/x/crypto/cryptobyte"
 	cryptobyte_asn1 "golang.org/x/crypto/cryptobyte/asn1"
 )
