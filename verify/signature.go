@@ -8,9 +8,9 @@ import (
 	"io"
 
 	"github.com/digitorus/pdf"
-	"github.com/digitorus/pkcs7"
 	"github.com/digitorus/timestamp"
 	"github.com/registrobr/pdfsign/revocation"
+	"github.com/registrobr/pkcs7"
 )
 
 // processSignature processes a single digital signature found in the PDF.
