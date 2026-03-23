@@ -94,10 +94,7 @@ func VerifyWithOptions(file io.ReaderAt, size int64, options *VerifyOptions) (ap
 			continue
 		}
 
-		// We must have a Filter Adobe.PPKLite
-		if v.Key("Filter").Name() != "Adobe.PPKLite" &&
-			v.Key("Filter").Name() != "Adobe.PPKMS" &&
-			v.Key("Filter").Name() != "VeriSign.PPKVS" {
+		if !isSupportedSignatureObject(v) {
 			continue
 		}
 
@@ -130,4 +127,21 @@ func VerifyWithOptions(file io.ReaderAt, size int64, options *VerifyOptions) (ap
 	apiResp.DocumentInfo = documentInfo
 
 	return
+}
+
+func isSupportedSignatureObject(v pdf.Value) bool {
+	if v.Key("Type").Name() != "Sig" {
+		return false
+	}
+
+	if slices.Contains([]string{
+		"Adobe.PPKLite",
+		"Adobe.PPKMS",
+		"VeriSign.PPKVS",
+		"PBAD_PAdES",
+	}, v.Key("Filter").Name()) {
+		return true
+	}
+
+	return false
 }
