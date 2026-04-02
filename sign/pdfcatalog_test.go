@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 var testFiles = []struct {

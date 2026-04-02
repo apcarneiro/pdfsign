@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
 )

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 // parseDocumentInfo parses document information from PDF Info dictionary.

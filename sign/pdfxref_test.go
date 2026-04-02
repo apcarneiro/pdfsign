@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/digitorus/pdf"
 	"github.com/mattetti/filebuffer"
+	"github.com/registrobr/pdf"
 )
 
 func TestGetLastObjectIDFromXref(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 func (context *SignContext) createCatalog() ([]byte, error) {

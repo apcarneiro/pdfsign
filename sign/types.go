@@ -6,8 +6,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/digitorus/pdf"
 	"github.com/mattetti/filebuffer"
+	"github.com/registrobr/pdf"
 	"github.com/registrobr/pdfsign/revocation"
 )
 
