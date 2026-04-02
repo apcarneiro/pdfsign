@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/digitorus/pdf"
 	"github.com/digitorus/timestamp"
+	"github.com/registrobr/pdf"
 	"github.com/registrobr/pdfsign/revocation"
 	"github.com/registrobr/pkcs7"
 )

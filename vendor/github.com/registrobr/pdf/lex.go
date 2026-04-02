@@ -25,16 +25,17 @@ type buffer struct {
 	allowEOF    bool
 	allowObjptr bool
 	allowStream bool
+	decDisabled bool
 	eof         bool
 	key         []byte
 	useAES      bool
 	encVersion  int
-	objptr      objptr
+	objptr      Objptr
 	line        int
 }
 
 var bufferPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return &buffer{
 			buf: make([]byte, 0, 4096),
 		}
@@ -57,18 +58,19 @@ func newBuffer(r io.Reader, offset int64, encVersion int) *buffer {
 	b.key = nil
 	b.useAES = false
 	b.encVersion = encVersion
-	b.objptr = objptr{}
+	b.objptr = Objptr{}
 	b.line = 1
 	return b
 }
 
+/*
 func (b *buffer) seek(offset int64) {
 	b.offset = offset
 	b.buf = b.buf[:0]
 	b.pos = 0
 	b.realPos = 0
 	b.unread = b.unread[:0]
-}
+}*/
 
 func (b *buffer) readByte() byte {
 	if b.pos >= len(b.buf) {
@@ -83,7 +85,7 @@ func (b *buffer) readByte() byte {
 	return c
 }
 
-func (b *buffer) errorf(format string, args ...interface{}) {
+func (b *buffer) errorf(format string, args ...any) {
 	panic(fmt.Errorf(format, args...))
 }
 
@@ -131,6 +133,7 @@ func (b *buffer) unreadToken(t Object) {
 	b.unread = append(b.unread, t)
 }
 
+// nolint: gocyclo
 func (b *buffer) readToken() Object {
 	if n := len(b.unread); n > 0 {
 		t := b.unread[n-1]
@@ -235,7 +238,7 @@ func (b *buffer) readHexString() Object {
 		}
 		x := unhex(c)<<4 | unhex(c2)
 		if x < 0 {
-			b.errorf("malformed hex string %c %c", c, c2)
+			b.errorf("malformed hex string %c %c %s", c, c2, b.buf[b.pos:])
 			break
 		}
 		tmp = append(tmp, byte(x))
@@ -256,6 +259,7 @@ func unhex(b byte) int {
 	return -1
 }
 
+// nolint: gocyclo
 func (b *buffer) readLiteralString() Object {
 	tmp := b.tmp[:0]
 	depth := 1
@@ -344,6 +348,7 @@ Loop:
 	return Object{Kind: String, StringVal: string(tmp)}
 }
 
+// nolint: gocyclo
 func (b *buffer) readName() Object {
 	tmp := b.tmp[:0]
 	// Fast path: scan buffer
@@ -453,6 +458,7 @@ Loop:
 	return Object{Kind: Name, NameVal: string(tmp)}
 }
 
+// nolint: gocyclo
 func (b *buffer) readKeyword() Object {
 	tmp := b.tmp[:0]
 Loop:
@@ -537,6 +543,7 @@ Loop:
 	return Object{Kind: Keyword, KeywordVal: string(tmp)}
 }
 
+// nolint: gocyclo
 func (b *buffer) readObject() Object {
 	if len(b.unread) == 0 {
 		// Optimization: Try to read indirect object/reference without boxing integers
@@ -567,11 +574,16 @@ func (b *buffer) readObject() Object {
 	}
 
 	if tok.Kind == String && b.key != nil && b.objptr.id != 0 {
+		var decrypted string
 		var err error
-		str := tok.StringVal
-		decrypted, err := decryptString(b.key, b.useAES, b.encVersion, b.objptr, str)
-		if err != nil {
-			panic(err)
+		if !b.decDisabled {
+			str := tok.StringVal
+			decrypted, err = decryptString(b.key, b.useAES, b.encVersion, b.objptr, str)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			decrypted = tok.StringVal
 		}
 		return Object{Kind: String, StringVal: decrypted}
 	}
@@ -591,10 +603,10 @@ func (b *buffer) readObject() Object {
 					if tok3.Kind == Keyword {
 						switch tok3.KeywordVal {
 						case "R":
-							return Object{Kind: Indirect, PtrVal: objptr{uint32(t1), uint16(t2)}}
+							return Object{Kind: Indirect, PtrVal: Objptr{uint32(t1), uint16(t2)}}
 						case "obj":
 							old := b.objptr
-							b.objptr = objptr{uint32(t1), uint16(t2)}
+							b.objptr = Objptr{uint32(t1), uint16(t2)}
 							obj := b.readObject()
 							if obj.Kind != Stream {
 								tok4 := b.readToken()
@@ -606,7 +618,7 @@ func (b *buffer) readObject() Object {
 							b.objptr = old
 							// Re-use PtrVal for definition ID
 							res := obj
-							res.PtrVal = objptr{uint32(t1), uint16(t2)}
+							res.PtrVal = Objptr{uint32(t1), uint16(t2)}
 							return res
 						}
 					}
@@ -622,6 +634,7 @@ func (b *buffer) readObject() Object {
 	return tok
 }
 
+// nolint: gocyclo
 func (b *buffer) tryReadIndirect() (Object, bool) {
 	// Snapshot state to rollback
 	startPos := b.pos
@@ -705,7 +718,7 @@ func (b *buffer) tryReadIndirect() (Object, bool) {
 		}
 		b.pos++
 		b.realPos++
-		return Object{Kind: Indirect, PtrVal: objptr{uint32(i1), uint16(i2)}}, true
+		return Object{Kind: Indirect, PtrVal: Objptr{uint32(i1), uint16(i2)}}, true
 	} else if c == 'o' {
 		if b.pos+2 < len(b.buf) && b.buf[b.pos+1] == 'b' && b.buf[b.pos+2] == 'j' {
 			// obj
@@ -719,7 +732,7 @@ func (b *buffer) tryReadIndirect() (Object, bool) {
 			b.realPos += 3
 
 			old := b.objptr
-			b.objptr = objptr{uint32(i1), uint16(i2)}
+			b.objptr = Objptr{uint32(i1), uint16(i2)}
 			obj := b.readObject()
 
 			if obj.Kind != Stream {
@@ -731,7 +744,7 @@ func (b *buffer) tryReadIndirect() (Object, bool) {
 			}
 			b.objptr = old
 			// Reuse PtrVal for definition ID
-			obj.PtrVal = objptr{uint32(i1), uint16(i2)}
+			obj.PtrVal = Objptr{uint32(i1), uint16(i2)}
 			return obj, true
 		}
 	}
@@ -761,8 +774,10 @@ func (b *buffer) readArray() Object {
 	return Object{Kind: Array, ArrayVal: x}
 }
 
+// nolint: gocyclo
 func (b *buffer) readDict() Object {
 	x := make(map[string]Object)
+	decDisabled := false
 	for {
 		tok := b.readToken()
 		if tok.Kind == Keyword && tok.KeywordVal == ">>" {
@@ -777,7 +792,18 @@ func (b *buffer) readDict() Object {
 			continue
 		}
 		n := tok.NameVal
+
+		if decDisabled && (n == "Contents" || n == "ByteRange") {
+			b.decDisabled = true
+		}
+
 		x[n] = b.readObject()
+
+		b.decDisabled = false
+
+		if n == "Type" && x[n].NameVal == "Sig" {
+			decDisabled = true
+		}
 	}
 
 	if !b.allowStream {

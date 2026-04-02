@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 var signatureTests = []struct {

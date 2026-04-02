@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 	"github.com/registrobr/pkcs7"
 
 	"github.com/mattetti/filebuffer"

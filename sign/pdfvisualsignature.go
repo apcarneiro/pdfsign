@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 // Define annotation flag constants.

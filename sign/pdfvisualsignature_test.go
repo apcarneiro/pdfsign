@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 func TestVisualSignature(t *testing.T) {

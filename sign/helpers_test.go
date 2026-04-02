@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 func TestFindFirstPage(t *testing.T) {

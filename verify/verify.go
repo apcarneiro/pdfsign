@@ -8,7 +8,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/digitorus/pdf"
+	"github.com/registrobr/pdf"
 )
 
 // DefaultVerifyOptions returns the default verification options following RFC 9336
