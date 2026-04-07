@@ -7,7 +7,7 @@ github.com/digitorus/timestamp
 # github.com/mattetti/filebuffer v1.0.1
 ## explicit
 github.com/mattetti/filebuffer
-# github.com/registrobr/pdf v0.2.1
+# github.com/registrobr/pdf v0.2.4
 ## explicit; go 1.23
 github.com/registrobr/pdf
 # github.com/registrobr/pkcs7 v0.0.0-20260319175213-cd51a793dd8e

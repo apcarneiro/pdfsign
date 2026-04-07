@@ -205,7 +205,8 @@ func (b *buffer) readToken() Object {
 
 	default:
 		if isDelim(c) {
-			b.errorf("unexpected delimiter %#q", rune(c))
+			// Tolerate unexpected delimiter in corrupted PDFs
+			// Return nil to signal end of token stream
 			return Object{Kind: Null}
 		}
 		b.unreadByte()
@@ -294,7 +295,6 @@ Loop:
 				c = b.readByte()
 				switch c {
 				default:
-					b.errorf("invalid escape sequence \\%c", c)
 					tmp = append(tmp, '\\', c)
 				case 'n':
 					tmp = append(tmp, '\n')
@@ -556,8 +556,6 @@ func (b *buffer) readObject() Object {
 	if tok.Kind == Keyword {
 		kw := tok.KeywordVal
 		switch kw {
-		case "null":
-			return Object{Kind: Null}
 		case "endobj":
 			b.unreadToken(tok)
 			return Object{Kind: Null}
@@ -567,9 +565,13 @@ func (b *buffer) readObject() Object {
 			return b.readArray()
 		case "]", ">>", "}":
 			return tok
+		case "null", "endstream", "stream":
+			// Tolerate these keywords appearing unexpectedly in corrupted PDFs
+			return Object{Kind: Null}
 		}
 
-		b.errorf("unexpected keyword %q parsing object", kw)
+		// Return the keyword itself for other unexpected keywords
+		// This allows the caller to handle it appropriately
 		return Object{Kind: Null}
 	}
 
@@ -763,7 +765,7 @@ func (b *buffer) readArray() Object {
 	x := make([]Object, 0, 8)
 	for {
 		obj := b.readObject()
-		if obj.Kind == Keyword && obj.KeywordVal == "]" {
+		if obj.MatchKeyword("]") {
 			break
 		}
 		if obj.Kind == Null && b.eof {
@@ -780,7 +782,7 @@ func (b *buffer) readDict() Object {
 	decDisabled := false
 	for {
 		tok := b.readToken()
-		if tok.Kind == Keyword && tok.KeywordVal == ">>" {
+		if tok.MatchKeyword(">>") {
 			break
 		}
 		if tok.Kind == Null && b.eof {
