@@ -6,6 +6,7 @@ package pdf
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"sort"
 )
@@ -42,15 +43,22 @@ type Object struct {
 	StreamOffset int64 // For Stream, DictVal holds the header
 }
 
+func (o *Object) MatchKeyword(val string) bool {
+	return o.Kind == Keyword && o.KeywordVal == val
+}
+
+func (o *Object) MatchName(val string) bool {
+	return o.Kind == Name && o.NameVal == val
+}
+
+func (o *Object) MatchString(val string) bool {
+	return o.Kind == String && o.KeywordVal == val
+}
+
 // Internal types
 type Objptr struct {
 	id  uint32
 	gen uint16
-}
-
-type objdef struct {
-	ptr Objptr
-	obj Object
 }
 
 // A Value represents a value in a PDF file.
@@ -152,10 +160,22 @@ func (v Value) Reader() io.ReadCloser {
 	if v.err != nil {
 		return &errorReadCloser{v.err}
 	}
+	if v.obj.Kind == Array {
+		var sb bytes.Buffer
+		for i := 0; i < v.Len(); i++ {
+			r := newStreamReader(v.Index(i).obj, v.r)
+			if b, err := io.ReadAll(r); err == nil {
+				sb.Write(b)
+			} else {
+				return &errorReadCloser{err}
+			}
+		}
+		return io.NopCloser(&sb)
+	}
 	if v.obj.Kind == Stream {
 		return newStreamReader(v.obj, v.r)
 	}
-	return io.NopCloser(bytes.NewReader(nil))
+	return &errorReadCloser{fmt.Errorf("stream not present")}
 }
 
 // Data returns the raw data of the stream v.
