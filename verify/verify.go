@@ -130,7 +130,8 @@ func VerifyWithOptions(file io.ReaderAt, size int64, options *VerifyOptions) (ap
 }
 
 func isSupportedSignatureObject(v pdf.Value) bool {
-	if v.Key("Type").Name() != "Sig" {
+	if v.Key("Type").Name() != "Sig" &&
+		v.Key("Type").Name() != "DocTimeStamp" {
 		return false
 	}
 
