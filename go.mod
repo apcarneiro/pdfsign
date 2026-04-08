@@ -9,7 +9,7 @@ require (
 	golang.org/x/text v0.34.0
 )
 
-require github.com/registrobr/pdf v0.2.4
+require github.com/registrobr/pdf v0.2.5
 
 require (
 	github.com/digitorus/pkcs7 v0.0.0-20250730155240-ffadbf3f398c // indirect

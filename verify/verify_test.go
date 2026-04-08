@@ -7,7 +7,7 @@ import (
 )
 
 func TestFile(t *testing.T) {
-	testFilePath := filepath.Join("..", "testfiles", "testfile30.pdf")
+	testFilePath := filepath.Join("..", "testfiles", "document_pje.pdf")
 
 	// Check if test file exists
 	if _, err := os.Stat(testFilePath); os.IsNotExist(err) {
